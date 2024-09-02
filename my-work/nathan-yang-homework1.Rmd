@@ -1,0 +1,150 @@
+---
+title: "Homework 1"
+author: "Nathan Yang"
+date: "8-30-2024"
+output:
+  pdf_document: default
+---
+
+### Exercise 1
+
+a.  Load the Data using the read.table() function
+
+    ```{r part-a}
+    rain_df <- read.table(file = "../homeworks/homework-1/data/rnf6080.dat")
+    ```
+
+b.  I can use `dim(rain_df)` to get the number of rows and columns
+
+    ```{r part-b}
+    dim(rain_df)
+    ```
+
+    From this, I know that `rain_df` has 5070 rows and 27 columns
+
+c.  I can use `colnames(rain_df)` to get all the column names
+
+    ```{r part-c}
+    colnames(rain_df)
+    ```
+
+d.  I can index the dataframe to get the value in the 2nd row 4th column
+
+    ```{r part-d}
+    rain_df[2, 4]
+    ```
+
+e.  I can display the whole second row by indexing it with the column value removed
+
+    ```{r part-e}
+    rain_df[2,]
+    ```
+
+f.  This command renames the column names of rain_df to be "year", "month", "day", and the numbers 0 through 23
+
+    ```{r}
+    names(rain_df) <- c("year","month","day",seq(0,23))
+    ```
+
+g.  Adding a column that aggregates daily rainfall
+
+    ```{r message=TRUE, warning=TRUE}
+    library(dplyr)
+    rain_df <- rain_df |>
+      mutate(
+        daily_rain_fall = rowSums(select(rain_df, one_of(as.character(0:23))))
+      )
+    ```
+
+h.  Creating a histogram
+
+    ```{r}
+    library(ggplot2)
+    ggplot(rain_df) +
+      geom_col(
+        aes(
+          x = as.Date(paste(year, month, day, sep = "-")), 
+          y = daily_rain_fall
+          )
+        ) +
+      labs(x = "Date", y = "Rainfall", title = "Daily Plot of Rainfall")
+    ```
+
+i.  This histogram can't be right because there can't exist days with negative rainfall
+
+j.  Here is how I would "fix" the dataframe.\
+    First, I needed to look at the rows that had negative values for `daily_rain_fall`
+
+    ```{r}
+    weird_rows <- rain_df |> 
+      filter(daily_rain_fall < 0)
+    tibble(weird_rows)
+    ```
+
+    Next, I need to replace all the all the "-999" values since they are obviously incorrect. Here I chose to replace them all with 0s
+
+    ```{r}
+    imputed_df <- rain_df |>
+      mutate_all(~ replace(., . == -999, 0))
+
+    ```
+
+    Next I would need to recalculate the daily rainfall sums
+
+    ```{r}
+    corrected_df <- imputed_df |>
+      mutate(
+        daily_rain_fall = rowSums(select(imputed_df, one_of(as.character(0:23))))
+      )
+    ```
+
+k.  Here is the regenerated histogram
+
+    ```{r}
+    ggplot(corrected_df) +
+      geom_col(
+        aes(
+          x = as.Date(paste(year, month, day, sep = "-")), 
+          y = daily_rain_fall
+          )
+        ) +
+      labs(x = "Date", y = "Rainfall", title = "Daily Plot of Rainfall")
+    ```
+
+    This is more reasonable than the previous histogram because there are no more negative values and the range of values is much more in line with expected rainfall.
+
+### Exercise 2
+
+a.  The result looks strange because the numbers are treated as strings here.\
+    `max(x)` returns "7" due to it being the latest alphanumerically\
+    `sort(x)` returns `["12", "5", "7"]` as this is the alphanumeric order\
+    `sum(x)` is an error since strings cannot be added together by `sum()`
+
+    ```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+    x <- c("5", "12", "7")
+    max(x)
+    sort(x)
+    sum(x)
+    ```
+
+b.  The `+` operation produces an error because one variable being a string determined `y` to be a vector of strings
+
+    ```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+    y <- c("5", 7, 12)
+    y[2] + y[3]
+    ```
+
+c.  The `+` operation works correctly because the 2 referenced values were numbers. Only the first value was determined to be a string while the second and third values were added.
+
+    ```{r}
+    z <- data.frame(z1 = "5", z2 = 7, z3 = 12)
+    z[1,2] + z[1,3]
+    ```
+
+### Exercise 3
+
+a.  The point of reproducible code is to ensure other people are able to confirm my work/findings as well as demonstrate a complete workflow.
+
+b.  An example of why reproducible code is so important is to verify my methods were correct, consistent, and statistically acceptable.
+
+c.  I rate this assignment in terms of difficulty a 6/10 since I struggled with correcting and aggregating the daily rainfall
