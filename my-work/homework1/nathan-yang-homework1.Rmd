@@ -51,9 +51,8 @@ g.  Adding a column that aggregates daily rainfall
     ```{r message=TRUE, warning=TRUE}
     if (!require("dplyr")) {
       install.packages("dplyr")
-      library(dpylr)
     } 
-    p_load(dplyr)
+    library(dplyr)
 
     rain_df <- rain_df |>
       mutate(
@@ -68,7 +67,7 @@ h.  Creating a histogram
       install.packages("ggplot2")
       library(ggplot2)
     } 
-    p_load(ggplot2)
+    library(ggplot2)
 
     ggplot(rain_df) +
       geom_col(
