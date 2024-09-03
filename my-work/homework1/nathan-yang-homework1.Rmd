@@ -11,7 +11,7 @@ output:
 a.  Load the Data using the read.table() function
 
     ```{r part-a}
-    rain_df <- read.table(file = "../homeworks/homework-1/data/rnf6080.dat")
+    rain_df <- read.table(file = "data/rnf6080.dat")
     ```
 
 b.  I can use `dim(rain_df)` to get the number of rows and columns
@@ -49,7 +49,12 @@ f.  This command renames the column names of rain_df to be "year", "month", "day
 g.  Adding a column that aggregates daily rainfall
 
     ```{r message=TRUE, warning=TRUE}
-    library(dplyr)
+    if (!require("dplyr")) {
+      install.packages("dplyr")
+      library(dpylr)
+    } 
+    p_load(dplyr)
+
     rain_df <- rain_df |>
       mutate(
         daily_rain_fall = rowSums(select(rain_df, one_of(as.character(0:23))))
@@ -59,7 +64,12 @@ g.  Adding a column that aggregates daily rainfall
 h.  Creating a histogram
 
     ```{r}
-    library(ggplot2)
+    if (!require("ggplot2")) {
+      install.packages("ggplot2")
+      library(ggplot2)
+    } 
+    p_load(ggplot2)
+
     ggplot(rain_df) +
       geom_col(
         aes(
