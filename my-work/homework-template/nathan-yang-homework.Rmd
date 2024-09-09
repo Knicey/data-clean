@@ -1,0 +1,19 @@
+---
+title: "Homework"
+author: "Nathan Yang"
+date: "8-30-2024"
+output:
+  pdf_document: default
+---
+
+### Exercise 1
+
+a.  Load
+
+### Exercise 2
+
+a.  The
+
+### Exercise 3
+
+a.  The
