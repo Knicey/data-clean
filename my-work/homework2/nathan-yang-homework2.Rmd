@@ -114,6 +114,6 @@ d.  Precision: 3.6e-05\
     recall(blockByGender, id)
     ```
 
-e.  This is an okay approach to blocking because 91% of the matches are correctly blocked together
+e.  This is an okay approach to blocking because 91% of the true matches are correctly blocked together
 
 f.  This is not a recommended approach to entity resolution because a very very minute percentage of the classified matches are true matches
