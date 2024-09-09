@@ -3,9 +3,9 @@ title: "Homework 2"
 author: "Nathan Yang"
 date: "9-9-2024"
 output:
+  pdf_document: default
   html_document:
     df_print: paged
-  pdf_document: default
 ---
 
 ### Exercise 1
@@ -68,6 +68,7 @@ a.
 b.  
 
     ```{r}
+    # Plot the blocks
     plot(recordsPerBlock, xlab = "Block", ylab = "Number of Blocks", main = "Block Size Distribution")
     ```
 
@@ -76,7 +77,7 @@ b.
 c.  
 
     ```{r}
-    #Function to calculate reduction ratio
+    # Function to calculate reduction ratio
     ReductionRatio <- function(dataset) {
       n_all_comp = choose(length(dataset), 2)
       n_block_comp = sum(choose(table(dataset), 2))
@@ -94,7 +95,7 @@ d.  Precision: 3.6e-05\
     91% of the true matches are classified correctly
 
     ```{r}
-
+    # Precision Function
     precision <- function(block.labels, IDs) {
       ct = xtabs(~block.labels+IDs)
       # Number of true positives
@@ -103,6 +104,8 @@ d.  Precision: 3.6e-05\
       P = sum(choose(rowSums(ct), 2))
       return(TP/P)
     }
+
+    # Recall Function
     recall <- function(block.labels, IDs) {
       ct = xtabs(~IDs+block.labels)
       # Number of true positives
