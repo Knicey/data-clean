@@ -89,7 +89,9 @@ c.
     The reduction ratio is 0.50. We reduced the comparison space by roughly 50%.
 
 d.  Precision: 3.6e-05\
-    Recall: 0.91
+    .0036% of the classified matches were true matches\
+    Recall: 0.91\
+    91% of the true matches are classified correctly
 
     ```{r}
 
@@ -114,6 +116,6 @@ d.  Precision: 3.6e-05\
     recall(blockByGender, id)
     ```
 
-e.  This is an okay approach to blocking because 91% of the true matches are correctly blocked together
+e.  This is an okay approach to blocking because 91% of the true matches are classified correctly (high recall)
 
-f.  This is not a recommended approach to entity resolution because a very very minute percentage of the classified matches are true matches
+f.  This is not a recommended approach to entity resolution because a very very minute percentage of the classified matches are true matches (very low precision)
