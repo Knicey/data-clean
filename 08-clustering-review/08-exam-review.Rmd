@@ -11,7 +11,7 @@ font-size: 8px
 
 ```{r, echo= FALSE}
 knitr::opts_chunk$set(fig.width=5, fig.height=3.5, 
-                      cache=TRUE) 
+                      cache=FALSE) 
 ```
 
  
@@ -88,6 +88,8 @@ The derivations are adapted from the authors' materials.
 Mixture Model
 ===
 
+Assume data points $x_1, \ldots, x_n.$
+
 Assume that we have a mixture of $K$ exponential distributions. 
 
 Following the notation in the article, assume that
@@ -126,6 +128,7 @@ $$\gamma_{ik} = \frac{
 \sum_{j=1}^K \pi_j \lambda_j e^{- \lambda_j x_i}
 }
 $$
+where $i=1, \ldots,n$ and $k=1,\ldots, K.$
 
 What does this step do in words? 
 
@@ -249,12 +252,23 @@ $$\pi_{k} =  \frac{
 = \frac{1}{n} \sum_{i=1}^n \gamma_{ik}.
 $$
 
-
-
-
-
-Monitor the expected log-likelihood
+Monitor the log-likelihood
 ===
+
+Recall that the log-likelihood is computed as follows: 
+
+$$L(\pi, \lambda) = \sum_{i=1}^{n} \log\left(\sum_{k=1}^{K} \pi_k \cdot \text{dexp}(x_i \mid \lambda_k)\right),$$
+where \text{dexp()} represents the Exponential density. 
+
+Specifically for an iteration $t+1$ and $t$ we can monitor 
+
+$$\Delta L^{(t + 1)} = |\Delta L^{(t + 1)} - \Delta L^{(t)}| < \epsilon$$
+Why can we monitor this? We estimate the parameters using the EM algorithm! 
+(See the code below for a connection to the mathematical formulation and implementation).
+
+Monitor the log-likelihood
+===
+
 Again, recall that 
 
 $$
@@ -268,8 +282,6 @@ Q(\lambda_1, \ldots, \lambda_K)
 $$
 
 Formally, this is the expected log-likelihood, which can be used an approximation to monitor convergence of the EM algorithm. 
-
-We cannot calculate the log-likelihood in closed form, so this is why we monitor changes to the expected log-likelihood. 
 
 Monitor the expected log-likelihood
 ===
@@ -347,30 +359,28 @@ exponentialMixture <- function(data, K, max_iter = 1000, tol = 1e-5) {
   n <- length(data)
   pi <- rep(1/K, K)  # mixing proportions
   lambda <- runif(K, 0.1, 1)  # rate parameters
-  
   log_likelihoods <- numeric(max_iter)  # store log-likelihood values
-  
+
   for (iter in 1:max_iter) {   # E-step: numerator of the gammas
     gamma <- matrix(NA, nrow = n, ncol = K)
     for (k in 1:K) {
       gamma[, k] <- pi[k] * dexp(data, rate = lambda[k])
     }
-    row_sums <- rowSums(gamma) # denominator of the gammas 
-    gamma <- gamma / row_sums  # normalize probabilities 
-    
-    pi_old <- pi              # M-step: Update mixing proportions and rate parameters
-    lambda_old <- lambda
-    
+    row_sums <- rowSums(gamma) # denominator of the gammas
+    gamma <- gamma / row_sums  # normalize probabilities
+
+    pi_old <- pi; lambda_old <- lambda
+    # M-step: Update mixing proportions and rate parameters
     pi <- colMeans(gamma)  # update mixing proportions
     for (k in 1:K) {
       lambda[k] <- sum(gamma[, k]) / sum(gamma[, k] * data)  # update rate parameters
     }
-    
+
     log_likelihoods[iter] <- sum(log(row_sums)) # calculate log-likelihood
-    
+
     if (max(abs(pi - pi_old)) < tol && max(abs(lambda - lambda_old)) < tol) {
       log_likelihoods <- log_likelihoods[1:iter]  # trim to the number of iterations
-      cat("Convergence reached at iteration", iter, 
+      cat("Convergence reached at iteration", iter,
           "with log-likelihood:", log_likelihoods[iter], "\n")
       break
     }
@@ -378,6 +388,28 @@ exponentialMixture <- function(data, K, max_iter = 1000, tol = 1e-5) {
   return(list(pi = pi, lambda = lambda, log_likelihood = log_likelihoods))
 }
 ```
+
+Code
+===
+
+Why does `sum(log(row_sums))` correspond to the log-likelihood? 
+
+In the E-step, we calculate the gamma values using Bayes Theorem for each data point belonging to each component. 
+
+```{r, eval = FALSE}
+# https://www.geeksforgeeks.org/apply-lapply-sapply-and-tapply-in-r/
+gamma <- sapply(1:K, 
+                function(k) pi[k] * dexp(data, 
+                    rate = lambda[k]))
+row_sums <- rowSums(gamma) 
+gamma <- gamma / row_sums
+```
+
+- gamma is the matrix of weighted probabilities
+- row_sums are the total probabilities for each data point under the current parameters
+
+Mathematically, row_sums represents $\sum_k \pi_k \text{dexp}(x_i \mid \lambda_k)$
+So taking the log and then summing gives the entire log-likelihood 
 
 Results
 ===
@@ -455,6 +487,32 @@ results_table <- data.frame(
 kable(results_table, caption = "Estimated Parameters for the Mixture Model", format = "pipe")
 ```
 
+What are your observations?
+=== 
+
+1. Are the estimates close to the truth?  
+
+<!-- \textcolor{blue}{No!} -->
+
+2. What could be the cause of the issue?  
+
+<!-- \textcolor{blue}{The starting values could be problematic and we're likely stuck in a local mode.} -->
+
+3. How could we potentially remedy the issue?  
+
+<!-- \textcolor{blue}{We could try better starting values, such as initializing at k-means. What happens if there's no improvement?} -->
+
+
+Log-Likelihood Plot
+===
+
+```{r, echo = FALSE}
+log_likelihoods <- result$log_likelihood
+plot(log_likelihoods, type = "o", col = "blue", xlab = "Iteration", 
+     ylab = "Log-Likelihood")
+grid()
+```
+
 Second Simulation Study
 ===
 
@@ -467,12 +525,12 @@ Next Steps
 - What would you do next for data analysis to investigate this simulation study?  
 - How can you utilize this code for the second simulation study? 
 - My major recommendation to prepare for the second exam is to go through these review slides and fully understand this material as we have spend a large amount of time on it in and out of class. 
-- Exam II will test your knowledge mostly of mixture models to allow you to dig deeply into one problem instead of testing your knowledge at the surface level on many problems. 
+- Exam II will test your knowledge of mixture models to allow you to dig deeply into one problem instead of testing your knowledge at the surface level on many problems. 
 
 Exam II
 ===
 
-This will look something similar to the exponential exercises that I have released to you, however, most of the code you will have available to make the task easier as this proved to be difficult for students to implement.
+This will very similar to the exponential exercise, however, most of the code you will have available to make the task easier as this proved to be difficult for students to implement.
 
 Questions? 
 ===
