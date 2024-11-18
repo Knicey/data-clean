@@ -1,0 +1,59 @@
+---
+title: "Exam Notes"
+author: "Nathan Yang"
+date: "11-15-2024"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+## Exam Review
+
+### Clustering
+
+#### Mixture Models and EM (Expectation Maximization) Algorithm
+
+-   We are trying to find parameters that maximize the log likelihood as much as possible (we can't actually find the maximum)
+
+    -   We instead maximize the expected log likelihood
+
+-   Monitor the both expected and log likelihood over iterations
+
+-   Initialize parameters, Iterate, update parameters, recalculate expected log likelihood
+
+-   Monitor and plot both
+
+#### Summary
+
+-   Overview: We want to get maximum log likelihood for two parameters
+
+    -   You can take the derivative but it may be very difficult to use
+
+    -   We instead use expected log likelihood because it's easier to work with
+
+-   Log likelihood plot can tell us how quickly we converged to a local maximum,
+
+    -   It does not say anything about how good the parameters are
+
+    -   Never guaranteed to tell if it goes to a global maximum
+
+    -   It can kind of indicate if the model is stuck if the graph looks funny
+
+-   Randomness can be introduced through how you initialize parameters (runif, rnorm, etc.)
+
+    -   Setting seed in different places may result in randomized results . . .
+
+    -   Randomness also comes from EM algorithm . . .
+
+-   Mixture Models get stuck all the time: To fix issues of the mixture model being stuck (we know the true parameters and the converged ones are wrong):
+
+    -   You can change your initialized parameters/starting values
+
+        -   You could pick the true values
+
+    -   You can use k-means to initialize the parameters (k = \# of components)
+
+-   Component Labels can swap and seem misleading, we don't know which corresponds to which
+
+    -   You have to common sense inference which component refers to which (ie: Male vs Female height means, Paperback vs Hardback sales)
